@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ajax</title>
+    <style>
+        #main{
+            width:80%;
+            margin:60px auto 0;
+        }
+        .tab{
+            width:100%;
+            border-collapse:collapse;
+            border-spacing:0;
+        }
+        .tab th{
+            padding:5px 10px;
+            background:#f4f4f4;
+            border:1px solid #ddd;
+            font-weight: 700;
+            font-size:14px;
+        }
+        .tab td{
+            padding:5px 10px;
+            font-size:14px;
+            border:1px solid #ddd;
+            text-align: center;
+        }
+        .tab tr:hover{
+            background: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+
+    </div>
+    <script src="./ajax.js"></script>
+    <script>
+        /* ajax({
+            url: "http://saas-group.morning-star.cn/retail-admin-acc/api/member/query",       //请求地址
+            type: "POST",                            //请求方式
+            data: {
+                groupCode:'JT00000005',
+                pageNo:1,
+                pageSize:20
+            },//请求参数
+            dataType: "json",
+            token:'00000053aHsWjUQO',//如果接口需token，登陆后才能访问就需要传
+            success: function (res) {
+                // 此处放成功后执行的代码
+                let data = res.data.record
+                let element = ''
+                for(let i=0; i<data.length; i++){
+                    element+='<div>'+'姓名：'+data[i].name+' 注册时间：'+data[i].regDate+' 手机号：'+data[i].mobileNo+'</div>'
+                }
+                document.getElementById('main').innerHTML=element
+
+            },
+            error: function (err) {
+                // 此处放失败后执行的代码
+                console.log(err)
+            }
+        }); */
+
+        // 用promise封装ajax
+        /*
+        参数：params
+            query：查询参数
+            url：接口地址
+        */
+        const request = (params = {query:{}}, url) => {
+            // 构建查询参数
+            let data = params.query || {};
+            // 构建请求方式，默认POST请求
+            let type = params.type || 'POST';
+            // 构建请求方式，默认POST请求
+            let token = params.token || '';
+            return new Promise((resolve,reject) => {
+                ajax({
+                    url,
+                    type,                      
+                    data,
+                    token,
+                    success: function (res) {
+                        resolve(res);
+                    },
+                    error: function (err) {
+                        reject(err)
+                    }
+                });
+            })
+        }
+
+        // 通过promise调用
+        // 第一步：先构造一个方法设置url
+        const queryApi = (params) => request(params, 'http://saas-group.morning-star.cn/retail-admin-acc/api/member/query');
+        // 第二步：设置参数，通过then()和catch()获取数据
+        queryApi({
+            groupCode:'JT00000005',
+            pageNo:1,
+            pageSize:20,
+            token:'00000053aHsWjUQO',
+        }).then((res) => {
+            // 此处放成功后执行的代码
+            let data = res.data.record
+            let element = ''
+            for(let i=0; i<data.length; i++){
+                element+=`<tr>
+                    <td>${data[i].cardNo}</td>
+                    <td>${data[i].code}</td>
+                    <td>${data[i].name}</td>
+                    <td>${data[i].mobileNo}</td>
+                    <td>${data[i].regShop}</td>
+                    <td>${data[i].regDate}</td>
+                </tr>`
+            }
+            let tab = `
+                <table class="tab">
+                    <tr>
+                        <th>会员编号</th>
+                        <th>线上会员卡号</th>
+                        <th>姓名</th>
+                        <th>电话</th>
+                        <th>注册门店</th>
+                        <th>注册时间</th>
+                    </tr>
+                    ${element}
+                </table>
+            `
+            document.getElementById('main').innerHTML=tab
+        }).catch((err) => {
+            console.log(err)
+        })
+
+
+    </script>
+</body>
+</html>
